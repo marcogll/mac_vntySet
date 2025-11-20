@@ -1,149 +1,77 @@
 #!/usr/bin/env bash
 
-echo "=== Vanity macOS Setup ==="
+set -e
 
-# -----------------------------
-# Helper functions
-# -----------------------------
-install_if_missing() {
-    if ! command -v "$1" >/dev/null 2>&1; then
-        echo "[Installing $1]"
-        brew install "$1"
-    else
-        echo "[$1 already installed]"
-    fi
-}
+ZSHRC_URL="https://raw.githubusercontent.com/marcogll/mac_vntySet/refs/heads/main/.zshrc.example"
+DOWNLOAD_DIR="$HOME/downloads/youtube"
+VIDEO_DIR="$DOWNLOAD_DIR/video"
+AUDIO_DIR="$DOWNLOAD_DIR/audio"
 
-# -----------------------------
-# Ensure ZSH exists
-# -----------------------------
-if ! command -v zsh >/dev/null 2>&1; then
-    echo "[Installing Zsh]"
-    brew install zsh
-else
-    echo "[Zsh already installed]"
-fi
-
-# -----------------------------
-# Homebrew
-# -----------------------------
-if ! command -v brew >/dev/null 2>&1; then
-    echo "[Installing Homebrew]"
+echo "[+] Verificando Homebrew..."
+if ! command -v brew &>/dev/null; then
+    echo "[+] Instalando Homebrew..."
     /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-else
-    echo "[Homebrew already installed]"
 fi
 
-# Load brew environment
-eval "$(/opt/homebrew/bin/brew shellenv)"
+eval "$(/opt/homebrew/bin/brew shellenv 2>/dev/null)"
 
-# -----------------------------
-# Core packages
-# -----------------------------
-echo "[Installing core tools]"
-install_if_missing curl
-install_if_missing wget
-install_if_missing git
-install_if_missing jq
-install_if_missing unzip
+echo "[+] Instalando paquetes base (zsh, curl, wget, python, node, docker, yt-dlp)..."
+brew install zsh curl wget python node docker docker-compose yt-dlp
 
-# -----------------------------
-# Python / Node / Docker
-# -----------------------------
-echo "[Installing languages & containers]"
-install_if_missing python
-install_if_missing node
-install_if_missing docker
-install_if_missing docker-compose
-
-# -----------------------------
-# Oh My Zsh
-# -----------------------------
-if [ ! -d "$HOME/.oh-my-zsh" ]; then
-    echo "[Installing Oh My Zsh]"
-    RUNZSH=no KEEP_ZSHRC=yes sh -c \
-        "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
-else
-    echo "[Oh My Zsh already installed]"
+echo "[+] Instalando Oh My Zsh..."
+if [[ ! -d "$HOME/.oh-my-zsh" ]]; then
+    sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended
 fi
 
-# -----------------------------
-# Zsh plugins
-# -----------------------------
-echo "[Installing Zsh plugins]"
+echo "[+] Instalando plugins de Zsh..."
+brew install zsh-autosuggestions zsh-syntax-highlighting
 
-# Autosuggestions
-if [ ! -d "${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/plugins/zsh-autosuggestions" ]; then
-    git clone https://github.com/zsh-users/zsh-autosuggestions \
-      ${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/plugins/zsh-autosuggestions
-fi
-
-# Syntax highlighting
-if [ ! -d "${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/plugins/zsh-syntax-highlighting" ]; then
-    git clone https://github.com/zsh-users/zsh-syntax-highlighting.git \
-      ${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/plugins/zsh-syntax-highlighting
-fi
-
-# -----------------------------
-# Oh My Posh
-# -----------------------------
-echo "[Installing Oh My Posh]"
+echo "[+] Instalando Oh My Posh..."
 brew install jandedobbeleer/oh-my-posh/oh-my-posh
 
-echo "[Installing Nerd Font]"
+echo "[+] Instalando fuente Nerd Font para el tema..."
 oh-my-posh font install Meslo
 
-# Descargar tema Catppuccin
-echo "[Downloading Catppuccin theme]"
+echo "[+] Descargando tema Catppuccin para Oh My Posh..."
+mkdir -p ~/.poshthemes
 curl -fsSL \
   https://raw.githubusercontent.com/JanDeDobbeleer/oh-my-posh/main/themes/catppuccin.omp.json \
-  -o ~/catppuccin.omp.json
+  -o ~/.poshthemes/catppuccin.omp.json
 
-# -----------------------------
-# yt-dlp + ffmpeg
-# -----------------------------
-echo "[Installing yt-dlp + ffmpeg]"
-install_if_missing yt-dlp
-install_if_missing ffmpeg
+chmod +r ~/.poshthemes/*.json
 
-# Carpeta de descargas
-mkdir -p ~/Downloads/youtube/video
-mkdir -p ~/Downloads/youtube/audio
+echo "[+] Descargando tu .zshrc desde GitHub..."
+curl -fsSL "$ZSHRC_URL" -o ~/.zshrc
 
-# -----------------------------
-# Download .zshrc (CUSTOMIZE URL)
-# -----------------------------
-echo "[Downloading .zshrc Vanity]"
-curl -fsSL "https://raw.githubusercontent.com/vanity/mac-setup/main/zshrc" \
-    -o ~/.zshrc
+echo "[+] Creando carpetas para yt-dlp..."
+mkdir -p "$VIDEO_DIR" "$AUDIO_DIR"
 
-# -----------------------------
-# Add yt aliases
-# -----------------------------
-if ! grep -q "alias ytv=" ~/.zshrc; then
-cat << 'EOF' >> ~/.zshrc
+echo "[+] Agregando alias ytv / ytm / help..."
+cat <<'EOF' >> ~/.zshrc
 
-# Vanity YouTube Download Aliases
-alias ytv='yt-dlp -o "~/Downloads/youtube/video/%(title)s.%(ext)s"'
-alias ytm='yt-dlp -x --audio-format mp3 -o "~/Downloads/youtube/audio/%(title)s.%(ext)s"'
+# --- Vanity additions (auto) ---
+
+alias ytv='yt-dlp -o "'"$VIDEO_DIR"'/%(title)s.%(ext)s"'
+alias ytm='yt-dlp -x --audio-format mp3 -o "'"$AUDIO_DIR"'/%(title)s.%(ext)s"'
+
+alias help="echo '\
+Comandos disponibles:
+  ytv URL   - Descarga video en $VIDEO_DIR
+  ytm URL   - Descarga música (MP3) en $AUDIO_DIR
+  cls       - Limpiar pantalla
+  brew      - Gestor de paquetes
+  python, node, docker, compose disponibles tras instalación
+'"
+
+# Plugins Zsh
+source /opt/homebrew/share/zsh-autosuggestions/zsh-autosuggestions.zsh
+source /opt/homebrew/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
+
+# Oh My Posh
+eval \"$(oh-my-posh init zsh --config ~/.poshthemes/catppuccin.omp.json)\"
+
+# ---
 EOF
-fi
 
-# -----------------------------
-# Oh My Posh init
-# -----------------------------
-if ! grep -q "oh-my-posh init zsh" ~/.zshrc; then
-cat << 'EOF' >> ~/.zshrc
-
-# Oh My Posh – Catppuccin
-eval "$(oh-my-posh init zsh --config ~/catppuccin.omp.json)"
-EOF
-fi
-
-# -----------------------------
-# Default shell
-# -----------------------------
-echo "[Setting Zsh as default shell]"
-chsh -s "$(which zsh)"
-
-echo "=== Installation Complete — restart your terminal ==="
+echo "[+] Aplicando configuración..."
+exec zsh
