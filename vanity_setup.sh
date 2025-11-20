@@ -1,175 +1,135 @@
 #!/usr/bin/env bash
+
 set -e
 
-# ==============================================
-# HEADER
-# ==============================================
-header() {
-  echo ""
-  echo "=============================================="
-  echo "                V A N I T Y  S H E L L"
-  echo "            macOS Development Installer"
-  echo "=============================================="
-  echo ""
+clear
+echo ""
+echo "=============================================="
+echo "              V A N I T Y  S H E L L"
+echo "          macOS Development Installer"
+echo "=============================================="
+echo ""
+
+echo "Selecciona una opción:"
+echo " A) Instalar TODO (recomendado)"
+echo " C) Instalar solo configuración ZSH"
+echo " D) Instalar Docker + Portainer + Lazydocker"
+echo " Q) Salir"
+echo ""
+read -p "Opción [A/C/D/Q]: " choice
+choice=${choice:-A}
+
+
+install_homebrew() {
+    if ! command -v brew >/dev/null 2>&1; then
+        echo "Instalando Homebrew…"
+        NONINTERACTIVE=1 /bin/bash -c \
+            "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+        echo 'eval "$(/opt/homebrew/bin/brew shellenv)"' >> ~/.zprofile
+        eval "$(/opt/homebrew/bin/brew shellenv)"
+    else
+        echo "Homebrew ya está instalado."
+    fi
+
+    brew update
 }
 
-# ==============================================
-# PROGRESO VISUAL
-# ==============================================
-progress() {
-  local task="$1"
-  echo "→ $task"
-  for i in 10 25 40 55 70 85 100; do
-    printf "   [%3s%%]\r" "$i"
-    sleep 0.06
-  done
-  printf "   [100%%] ✓ Completado\n\n"
-}
+install_zsh_config() {
+    echo "Instalando ZSH base…"
+    brew install zsh curl wget git yq jq xclip node python
 
-# ==============================================
-# INSTALACIÓN REAL
-# ==============================================
-install_everything() {
-
-  # ------------------------------------------------
-  # Homebrew
-  # ------------------------------------------------
-  progress "Instalando Homebrew"
-  if ! command -v brew >/dev/null 2>&1; then
-      NONINTERACTIVE=1 /bin/bash -c \
-        "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-      echo 'eval "$(/opt/homebrew/bin/brew shellenv)"' >> ~/.zprofile
-      eval "$(/opt/homebrew/bin/brew shellenv)"
-  fi
-
-  brew update
-
-  # ------------------------------------------------
-  # Paquetes base
-  # ------------------------------------------------
-  progress "Instalando paquetes base"
-  brew install zsh curl wget git xclip yq jq
-
-  # ------------------------------------------------
-  # Oh My Zsh
-  # ------------------------------------------------
-  progress "Instalando Oh My Zsh"
-  if [ ! -d "$HOME/.oh-my-zsh" ]; then
-      RUNZSH=no CHSH=no KEEP_ZSHRC=yes \
+    echo "Instalando Oh My Zsh…"
+    if [ ! -d "$HOME/.oh-my-zsh" ]; then
+        RUNZSH=no CHSH=no KEEP_ZSHRC=yes \
         sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
-  fi
+    fi
 
-  # ------------------------------------------------
-  # Plugins ZSH
-  # ------------------------------------------------
-  progress "Instalando plugins ZSH"
-  mkdir -p ~/.oh-my-zsh/custom/plugins
+    echo "Instalando plugins…"
+    mkdir -p ~/.oh-my-zsh/custom/plugins
 
-  repos=(
-    "zsh-users/zsh-autosuggestions"
-    "zsh-users/zsh-syntax-highlighting"
-    "zsh-users/zsh-completions"
-  )
+    repos=(
+      "zsh-users/zsh-autosuggestions"
+      "zsh-users/zsh-syntax-highlighting"
+      "zsh-users/zsh-completions"
+    )
 
-  for r in "${repos[@]}"; do
-      folder=$(basename "$r")
-      [ ! -d "$HOME/.oh-my-zsh/custom/plugins/$folder" ] && \
-        git clone https://github.com/$r ~/.oh-my-zsh/custom/plugins/$folder
-  done
+    for r in "${repos[@]}"; do
+        folder=$(basename "$r")
+        if [ ! -d "$HOME/.oh-my-zsh/custom/plugins/$folder" ]; then
+            git clone https://github.com/$r ~/.oh-my-zsh/custom/plugins/$folder
+        fi
+    done
 
-  # ------------------------------------------------
-  # Oh My Posh + tema + fuente
-  # ------------------------------------------------
-  progress "Instalando Oh My Posh y tema Catppuccin"
-  brew install jandedobbeleer/oh-my-posh/oh-my-posh
-  mkdir -p ~/.poshthemes
-  curl -fsSL \
-    https://raw.githubusercontent.com/JanDeDobbeleer/oh-my-posh/main/themes/catppuccin.omp.json \
-    -o ~/.poshthemes/catppuccin.omp.json
+    echo "Instalando Oh My Posh…"
+    brew install jandedobbeleer/oh-my-posh/oh-my-posh
 
-  oh-my-posh font install meslo
+    mkdir -p ~/.poshthemes
+    curl -fsSL \
+      https://raw.githubusercontent.com/JanDeDobbeleer/oh-my-posh/main/themes/catppuccin.omp.json \
+      -o ~/.poshthemes/catppuccin.omp.json
 
-  # ------------------------------------------------
-  # Descargar tu archivo .zshrc
-  # ------------------------------------------------
-  progress "Descargando archivo .zshrc VanityOS"
-  curl -fsSL \
-    https://raw.githubusercontent.com/marcogll/mac_vntySet/refs/heads/main/.zshrc.example \
-    -o ~/.zshrc
+    oh-my-posh font install meslo
 
-  # ------------------------------------------------
-  # Python, Node, yt-dlp, Docker, LazyDocker
-  # ------------------------------------------------
-  progress "Instalando Python, Node, yt-dlp y LazyDocker"
-  brew install python node yt-dlp lazydocker
+    echo "Descargando tu .zshrc.example…"
+    curl -fsSL https://raw.githubusercontent.com/marcogll/mac_vntySet/main/.zshrc.example \
+      -o ~/.zshrc
 
-  # ------------------------------------------------
-  # Docker Desktop
-  # ------------------------------------------------
-  progress "Instalando Docker Desktop (CLI + Compose)"
-  brew install --cask docker
-
-  # ------------------------------------------------
-  # Portainer (Docker)
-  # ------------------------------------------------
-  progress "Configurando Portainer CE"
-  docker volume create portainer_data || true
-  docker stop portainer >/dev/null 2>&1 || true
-  docker rm portainer >/dev/null 2>&1 || true
-
-  docker run -d \
-    -p 8000:8000 -p 9443:9443 \
-    --name=portainer \
-    --restart=always \
-    -v /var/run/docker.sock:/var/run/docker.sock \
-    -v portainer_data:/data \
-    portainer/portainer-ce:latest
-
-  # ------------------------------------------------
-  # Copiar "source ~/.zshrc" al portapapeles
-  # ------------------------------------------------
-  echo "source ~/.zshrc" | pbcopy
-  echo ""
-  echo "La configuración está lista."
-  echo "Pega en tu terminal:"
-  echo ""
-  echo "   source ~/.zshrc"
-  echo ""
-  echo "(Ya está copiado en tu portapapeles)"
+    echo "source ~/.zshrc" | pbcopy
+    echo ""
+    echo "Tu configuración ZSH está instalada."
+    echo "El comando 'source ~/.zshrc' ya está copiado al portapapeles."
+    echo ""
 }
 
-# ==============================================
-# MENU
-# ==============================================
-menu() {
-  header
+install_docker_stack() {
+    echo "Instalando Docker Desktop…"
+    brew install --cask docker
 
-  echo "Selecciona una opción (ENTER = A):"
-  echo ""
-  echo "   A) Instalar TODO (recomendado)"
-  echo "   1) Instalar Homebrew"
-  echo "   2) Instalar ZSH + plugins"
-  echo "   3) Instalar Oh My Posh + tema"
-  echo "   4) Instalar Python + Node"
-  echo "   5) Instalar Docker + Portainer + LazyDocker"
-  echo "   6) Instalar yt-dlp + aliases"
-  echo "   0) Salir"
-  echo ""
+    echo "Instalando Lazydocker…"
+    brew install lazydocker
 
-  read -rp "Opción [A]: " opt
-  opt="${opt:-A}"
+    echo "Instalando Portainer…"
+    docker volume create portainer_data || true
+    docker stop portainer >/dev/null 2>&1 || true
+    docker rm portainer >/dev/null 2>&1 || true
 
-  echo ""
+    docker run -d \
+      -p 8000:8000 -p 9443:9443 \
+      --name=portainer \
+      --restart=always \
+      -v /var/run/docker.sock:/var/run/docker.sock \
+      -v portainer_data:/data \
+      portainer/portainer-ce:latest
+}
 
-  case "$opt" in
-    A|a) install_everything ;;
-    0) echo "Saliendo…"; exit 0 ;;
+
+case "$choice" in
+    A|a)
+        install_homebrew
+        install_zsh_config
+        install_docker_stack
+        ;;
+    C|c)
+        install_homebrew
+        install_zsh_config
+        ;;
+    D|d)
+        install_homebrew
+        install_docker_stack
+        ;;
+    Q|q)
+        echo "Saliendo…"
+        exit 0
+        ;;
     *)
-      echo "Modo individual aún no habilitado."
-      sleep 1
-      menu
-      ;;
-  esac
-}
+        echo "Opción inválida."
+        exit 1
+        ;;
+esac
 
-menu
+
+echo ""
+echo "=============================================="
+echo " Instalación completada."
+echo "=============================================="
+echo ""
