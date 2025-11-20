@@ -1,142 +1,115 @@
 #!/usr/bin/env bash
-
 set -e
 
-echo ">>> Actualizando Homebrew / instalando si no existe..."
-if ! command -v brew &> /dev/null; then
-    /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+# ────────────────────────────────────────────────
+# ASCII ART VANITY OS SHELL
+# ────────────────────────────────────────────────
+printf "\n"
+printf "██╗   ██╗ █████╗ ███╗   ██╗██╗███╗   ██╗██╗   ██╗     ██████╗ ███████╗\n"
+printf "██║   ██║██╔══██╗████╗  ██║██║████╗  ██║██║   ██║    ██╔════╝ ██╔════╝\n"
+printf "██║   ██║███████║██╔██╗ ██║██║██╔██╗ ██║██║   ██║    ██║  ███╗█████╗  \n"
+printf "╚██╗ ██╔╝██╔══██║██║╚██╗██║██║██║╚██╗██║██║   ██║    ██║   ██║██╔══╝  \n"
+printf " ╚████╔╝ ██║  ██║██║ ╚████║██║██║ ╚████║╚██████╔╝    ╚██████╔╝███████╗\n"
+printf "  ╚═══╝  ╚═╝  ╚═╝╚═╝  ╚═══╝╚═╝╚═╝  ╚═══╝ ╚═════╝      ╚═════╝ ╚══════╝\n"
+printf "                 Vanity OS Shell Installer (macOS)\n\n"
+
+# ────────────────────────────────────────────────
+# Homebrew
+# ────────────────────────────────────────────────
+if ! command -v brew >/dev/null 2>&1; then
+    echo "Instalando Homebrew…"
+    NONINTERACTIVE=1 /bin/bash -c \
+        "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+    echo 'eval "$(/opt/homebrew/bin/brew shellenv)"' >> ~/.zprofile
+    eval "$(/opt/homebrew/bin/brew shellenv)"
+else
+    echo "Homebrew ya está instalado."
 fi
 
+echo "Actualizando Homebrew…"
 brew update
 
-#######################################
-# ZSH + OH-MY-ZSH + PLUGINS + OMP
-#######################################
+# ────────────────────────────────────────────────
+# Instalando paquetes base
+# ────────────────────────────────────────────────
+brew install zsh curl wget git xclip yq jq
 
-echo ">>> Instalando Zsh..."
-brew install zsh
-
-echo ">>> Instalando wget y curl..."
-brew install wget curl
-
-echo ">>> Instalando Oh My Zsh..."
+# ────────────────────────────────────────────────
+# Oh My Zsh
+# ────────────────────────────────────────────────
 if [ ! -d "$HOME/.oh-my-zsh" ]; then
-    sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended
+    echo "Instalando Oh My Zsh…"
+    RUNZSH=no CHSH=no KEEP_ZSHRC=yes \
+    sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
 fi
 
-echo ">>> Instalando plugins zsh..."
-brew install zsh-autosuggestions zsh-syntax-highlighting zsh-history-substring-search
+# ────────────────────────────────────────────────
+# Plugins de ZSH
+# ────────────────────────────────────────────────
+mkdir -p ~/.oh-my-zsh/custom/plugins
 
-echo ">>> Instalando Oh My Posh..."
+repos=(
+  "zsh-users/zsh-autosuggestions"
+  "zsh-users/zsh-syntax-highlighting"
+  "zsh-users/zsh-completions"
+)
+
+for r in "${repos[@]}"; do
+    folder=$(basename "$r")
+    if [ ! -d "$HOME/.oh-my-zsh/custom/plugins/$folder" ]; then
+        git clone https://github.com/$r ~/.oh-my-zsh/custom/plugins/$folder
+    fi
+done
+
+# ────────────────────────────────────────────────
+# Instalación Oh My Posh + tema + fuentes
+# ────────────────────────────────────────────────
 brew install jandedobbeleer/oh-my-posh/oh-my-posh
 
-echo ">>> Instalando fuente de Oh My Posh..."
-oh-my-posh font install Meslo
-
-echo ">>> Descargando tema Catppuccin para OMP..."
 mkdir -p ~/.poshthemes
-wget -O ~/.poshthemes/catppuccin.omp.json \
-    https://raw.githubusercontent.com/JanDeDobbeleer/oh-my-posh/main/themes/catppuccin.omp.json
+curl -fsSL \
+  https://raw.githubusercontent.com/JanDeDobbeleer/oh-my-posh/main/themes/catppuccin.omp.json \
+  -o ~/.poshthemes/catppuccin.omp.json
 
-#######################################
-# Python + Node
-#######################################
+# fuente recomendada
+oh-my-posh font install meslo
 
-echo ">>> Instalando Python..."
-brew install python
+# ────────────────────────────────────────────────
+# Descargar tu .zshrc.example
+# ────────────────────────────────────────────────
+echo "Descargando .zshrc.example…"
+curl -fsSL https://raw.githubusercontent.com/marcogll/mac_vntySet/refs/heads/main/.zshrc.example \
+  -o ~/.zshrc
 
-echo ">>> Instalando Node..."
-brew install node
+# ────────────────────────────────────────────────
+# Python, Node, Docker, Lazydocker
+# ────────────────────────────────────────────────
+brew install python node lazydocker
 
-#######################################
-# yt-dlp + alias
-#######################################
+# Docker Desktop CLI + Compose
+brew install --cask docker
 
-echo ">>> Instalando yt-dlp..."
-brew install yt-dlp ffmpeg
-
-# Crear carpetas
-mkdir -p ~/downloads/youtube/video
-mkdir -p ~/downloads/youtube/audio
-
-#######################################
-# LazyDocker
-#######################################
-
-echo ">>> Instalando LazyDocker..."
-brew install jesseduffield/lazydocker/lazydocker
-
-#######################################
-# Docker CLI + Compose + Portainer
-#######################################
-
-echo ">>> Instalando Docker CLI + Docker Compose..."
-brew install docker docker-compose
-
-echo ">>> Ejecutando Portainer..."
-docker volume create portainer_data
+# ────────────────────────────────────────────────
+# Portainer (docker)
+# ────────────────────────────────────────────────
+docker volume create portainer_data || true
+docker stop portainer >/dev/null 2>&1 || true
+docker rm portainer >/dev/null 2>&1 || true
 
 docker run -d \
-  -p 8000:8000 \
-  -p 9443:9443 \
-  --name portainer \
+  -p 8000:8000 -p 9443:9443 \
+  --name=portainer \
   --restart=always \
   -v /var/run/docker.sock:/var/run/docker.sock \
   -v portainer_data:/data \
   portainer/portainer-ce:latest
 
-#######################################
-# Descargar .zshrc custom desde tu repo
-#######################################
+# ────────────────────────────────────────────────
+# Copiar "source ~/.zshrc" al portapapeles
+# ────────────────────────────────────────────────
+echo "source ~/.zshrc" | pbcopy
 
-echo ">>> Descargando tu .zshrc personalizado..."
-wget -O ~/.zshrc \
-  https://raw.githubusercontent.com/marcogll/mac_vntySet/refs/heads/main/.zshrc.example
-
-#######################################
-# Agregar Aliases y ajustes extra
-#######################################
-
-cat <<'EOF' >> ~/.zshrc
-
-# -------------------------
-# VANITY CUSTOM ALIASES
-# -------------------------
-
-alias cls="clear"
-
-# yt-dlp video
-alias ytv='yt-dlp -f "bestvideo+bestaudio" -o "~/downloads/youtube/video/%(title)s.%(ext)s"'
-
-# yt-dlp música (mp3)
-alias ytm='yt-dlp -x --audio-format mp3 -o "~/downloads/youtube/audio/%(title)s.%(ext)s"'
-
-# LazyDocker
-alias lzd="lazydocker"
-
-# Docker compose corto
-alias dcu="docker compose up -d"
-alias dcd="docker compose down"
-
-# Help command
-alias vanity-help="echo '
-Comandos disponibles:
-    ytv URL     → Descargar video en ~/downloads/youtube/video
-    ytm URL     → Descargar audio/mp3 en ~/downloads/youtube/audio
-    lzd         → Abrir LazyDocker
-    dcu         → docker compose up -d
-    dcd         → docker compose down
-    cls         → clear
-'"
-
-# ZSH plugins
-source /opt/homebrew/share/zsh-autosuggestions/zsh-autosuggestions.zsh
-source /opt/homebrew/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
-source /opt/homebrew/share/zsh-history-substring-search/zsh-history-substring-search.zsh
-
-# Oh My Posh prompt
-eval "$(oh-my-posh init zsh --config ~/.poshthemes/catppuccin.omp.json)"
-
-EOF
-
-echo ">>> Instalación completa. Reinicia la terminal."
+printf "\nListo.\n"
+printf "Pega y ejecuta en tu terminal para activar la configuración:\n"
+printf "\n    source ~/.zshrc\n\n"
+printf "(Ya lo tienes en el portapapeles, solo pega con Cmd+V)\n\n"
