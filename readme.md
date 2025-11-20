@@ -1,150 +1,87 @@
-# Vanity macOS Setup
+# mac_vntySet — Instalación automática para macOS
 
-Este proyecto proporciona un instalador automatizado para configurar un entorno de desarrollo moderno en macOS. Incluye instalación de Zsh, Oh My Zsh, plugins de productividad, Oh My Posh con el tema Catppuccin, Python, Node, Docker, yt-dlp y un `.zshrc` preconfigurado.
-
-El script está diseñado para ejecutarse en macOS Apple Silicon o Intel.
-
----
-
-## Características principales
-
-El instalador incluye:
-
-### Shell & Terminal
-
-* Instalación y activación automática de **Zsh**
-* Instalación de **Oh My Zsh**
-* Plugins:
-
-  * `zsh-autosuggestions`
-  * `zsh-syntax-highlighting`
-  * `macos`
-* Configuración de historial extendido y opciones mejoradas del shell
-* Descarga automática del archivo `.zshrc` personalizado
-
-### Prompt
-
-* Instalación de **Oh My Posh**
-* Descarga del tema **Catppuccin**
-* Instalación automática de la Nerd Font necesaria
-
-### Paquetes esenciales
-
-* Homebrew
-* curl
-* wget
-* git
-* jq
-* unzip
-
-### Lenguajes y runtimes
-
-* **Python**
-* **Node.js**
-
-### Contenedores
-
-* **Docker CLI**
-* **docker-compose**
-
-### Descargas multimedia
-
-* **yt-dlp**
-* **ffmpeg**
-* Alias incluidos:
-
-  * `ytv <url>` → descarga videos en `~/Downloads/youtube/video`
-  * `ytm <url>` → descarga audio MP3 en `~/Downloads/youtube/audio`
+Este script prepara un entorno de desarrollo completo en macOS con Homebrew, Zsh, Oh My Zsh, Oh My Posh, Node, Python, Docker, Portainer y más.
+Todo se instala sin intervención usando el modo predeterminado **“A” (instalar todo)**.
 
 ---
 
-## Requisitos
+## 🚀 Instalación
 
-* macOS 12 o superior
-* Conexión a internet
-* Permisos administrativos para ejecutar comandos con `sudo`
+Ejecuta este comando en tu terminal:
 
----
-
-## Instalación
-
-1. Clona este repositorio o descarga el script:
-
-   ```bash
-   git clone https://github.com/vanity/mac-setup.git
-   cd mac-setup
-   ```
-
-2. Da permisos de ejecución:
-
-   ```bash
-   chmod +x vanity_setup.sh
-   ```
-
-3. Ejecuta el instalador:
-
-   ```bash
-   ./vanity_setup.sh
-   ```
-
-4. Cuando finalice, reinicia la terminal.
-
----
-
-## ¿Qué hace el script?
+```bash
+bash -c "$(curl -fsSL https://raw.githubusercontent.com/marcogll/mac_vntySet/refs/heads/main/install.sh)"
+```
 
 El script:
 
-1. Verifica si **Homebrew** está instalado; si no, lo instala.
-2. Verifica si **zsh** está instalado; si no, lo instala y lo configura como shell por defecto.
-3. Instala:
-
-   * curl, wget, git, jq, unzip
-   * Python
-   * Node
-   * Docker CLI + Compose
-   * yt-dlp + ffmpeg
-4. Instala **Oh My Zsh** sin modificar archivos existentes.
-5. Instala **Oh My Posh** y su fuente recomendada.
-6. Descarga el tema **Catppuccin**.
-7. Descarga el archivo `.zshrc` desde el repositorio.
-8. Configura:
-
-   * autosuggestions
-   * syntax highlighting
-   * historial extendido
-   * alias para yt-dlp
-9. Crea las carpetas necesarias para descargas multimedia.
+1. Instala Homebrew si no existe.
+2. Instala herramientas base (Zsh, Git, Curl, etc.).
+3. Configura Oh My Zsh + plugins.
+4. Instala Oh My Posh + fuente Meslo.
+5. Descarga tu `.zshrc` personalizado.
+6. Instala Python, Node, Docker y Lazydocker.
+7. Configura Portainer automáticamente.
+8. Copia al portapapeles el comando `source ~/.zshrc`.
 
 ---
 
-## Estructura de archivos
+## 📂 Estructura
 
-```
-.
-├── vanity_setup.sh        # Instalador principal
-├── zshrc                  # Archivo .zshrc personalizado
-├── README.md              # Este archivo
-```
+* **install.sh** – Script principal de instalación automática.
+* **.zshrc.example** – Configuración base para tu shell.
 
 ---
 
-## Alias disponibles
+## 🧩 Requisitos
 
-Después de instalar:
-
-```
-ytv <URL>   # descarga video
-ytm <URL>   # descarga audio mp3
-ll          # ls -lah
-cls         # clear
-brewfix     # mantenimiento de Homebrew
-```
+* macOS (Intel o Apple Silicon).
+* Conexión a internet.
 
 ---
 
-## Soporte
+## 🐳 Portainer
 
-Si deseas extender el script, agregar plugins extra o integrar herramientas mediante contenedores Docker, puedes modificar el archivo `vanity_setup.sh` según lo requieras.
+El script instala y levanta automáticamente Portainer en:
+
+* **[https://localhost:9443](https://localhost:9443)**
+
+Puedes entrar y configurar tu entorno Docker sin pasos extra.
 
 ---
+
+## 🎨 Tema y shell
+
+El entorno queda configurado con:
+
+* **Oh My Posh** usando tema **Catppuccin**
+* **Meslo Nerd Font** instalada automáticamente
+* Plugins de Zsh:
+
+  * Autocompletado avanzado
+  * Autosuggestions
+  * Syntax highlighting
+
+---
+
+## 🔁 Activación
+
+Al final del proceso el instalador copia este comando al portapapeles:
+
+```bash
+source ~/.zshrc
+```
+
+Solo pégalo para activar toda la configuración.
+
+---
+
+## 🛠️ Actualizar o reinstalar
+
+Puedes volver a ejecutar el instalador cuando quieras; es idempotente (no rompe nada).
+
+---
+
+## 📜 Licencia
+
+MIT.
