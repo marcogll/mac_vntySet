@@ -1,189 +1,140 @@
-############################################
-# OH MY ZSH
-############################################
+# .zshrc.example
+# Archivo de ejemplo para configurar Zsh + Oh My Zsh.
+# Bien documentado para entender qué hace cada sección.
+# Puedes copiarlo a ~/.zshrc y modificarlo según tus preferencias.
 
+# ------------------------------------------------------------
+# 1. PATH y variables básicas
+# ------------------------------------------------------------
+# Añade rutas personalizadas al PATH si usas Homebrew, Node, Python, etc.
+export PATH="/opt/homebrew/bin:/opt/homebrew/sbin:$PATH"
+export PATH="$HOME/.local/bin:$PATH"
+
+# ------------------------------------------------------------
+# 2. Oh My Zsh: tema y plugins
+# ------------------------------------------------------------
+# Tema visual del prompt. "powerlevel10k" es rápido y bonito.
+ZSH_THEME="powerlevel10k/powerlevel10k"
+
+# Lista de plugins que se cargarán al iniciar Zsh.
+# Se recomienda no abusar de plugins para evitar lentitud.
+plugins=(
+  git            # shortcuts de git
+  sudo           # permite repetir comandos con sudo (!!)
+  history        # historial mejorado
+  colorize       # colorear salida de comandos
+  docker         # autocompletado para Docker
+  docker-compose # autocompletado para Docker Compose
+  npm            # utilidades para Node
+  node           # autocompletado Node.js
+  python         # autocompletado Python
+  pip            # autocompletado pip
+  golang         # autocompletado Go
+  copypath       # copiar rutas al portapapeles
+  copyfile       # copiar archivos al portapapeles
+)
+
+# Carga Oh My Zsh
+export ZSH="$HOME/.oh-my-zsh"
+source $ZSH/oh-my-zsh.sh
+
+# ------------------------------------------------------------
+# 3. Configuraciones de historial
+# ------------------------------------------------------------
+HISTSIZE=5000              # tamaño en memoria
+SAVEHIST=5000              # tamaño en disco
+HISTFILE=~/.zsh_history    # archivo donde se guarda
+setopt SHARE_HISTORY       # compartir historial entre sesiones
+setopt HIST_IGNORE_DUPS    # no guardar duplicados
+setopt HIST_IGNORE_SPACE   # no guardar comandos que comiencen con espacio
+
+# ------------------------------------------------------------
+# 4. Alias útiles
+# ------------------------------------------------------------
+alias ll="ls -lah"
+alias gs="git status"
+alias gl="git log --oneline --graph --decorate"
+alias please="sudo !!"   # magia pura ;)
+
+# ------------------------------------------------------------
+# 5. Mejoras de terminal
+# ------------------------------------------------------------
+# Colores más bonitos en 'ls'
+export CLICOLOR=1
+export LSCOLORS="GxFxCxDxBxegedabagacad"
+
+# Editor de texto por defecto
+export EDITOR="nano"
+
+# ------------------------------------------------------------
+# 6. Powerlevel10k (si está instalado)
+# ------------------------------------------------------------
+# Este archivo se genera automáticamente cuando configuras p10k.
+# Si no existe, puedes generarlo ejecutando: p10k configure
+[[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
+# ~/.zshrc.example — Configuración adaptada para Vanity Shell en macOS
+# ---------------------------------------------------------------
+# Archivo totalmente documentado para uso dentro del entorno Vanity Shell.
+# Este archivo será copiado a ~/.zshrc por vanity_setup.sh.
+# Incluye: Oh My Zsh, Oh My Posh, plugins, historial, alias y funciones.
+
+# ---------------------------------------------------------------
+# PATH — rutas básicas del sistema
+# ---------------------------------------------------------------
+export PATH="$HOME/bin:/usr/local/bin:/opt/homebrew/bin:$PATH"
+
+# ---------------------------------------------------------------
+# Oh My Zsh — Framework principal
+# ---------------------------------------------------------------
 export ZSH="$HOME/.oh-my-zsh"
 ZSH_THEME="robbyrussell"
 
+# Lista de plugins para mejorar la experiencia de ZSH.
 plugins=(
-    git
-    docker
+  git sudo history colorize
+  docker docker-compose
+  npm node python pip golang
+  copypath copyfile
+  zsh-autosuggestions
+  zsh-syntax-highlighting
+  zsh-completions
 )
 
 source $ZSH/oh-my-zsh.sh
 
-
-############################################
-# OH MY POSH (Catppuccin)
-############################################
-
+# ---------------------------------------------------------------
+# Oh My Posh — Prompt con tema Catppuccin
+# ---------------------------------------------------------------
 eval "$(oh-my-posh init zsh --config ~/.poshthemes/catppuccin.omp.json)"
 
+# ---------------------------------------------------------------
+# Historial — configuración avanzada
+# ---------------------------------------------------------------
+HISTSIZE=50000
+SAVEHIST=50000
+HISTFILE=~/.zsh_history
+setopt HIST_IGNORE_SPACE
+setopt HIST_IGNORE_DUPS
+setopt HIST_VERIFY
 
-############################################
-# MODULAR CONFIG (~/.config/zsh)
-############################################
+# ---------------------------------------------------------------
+# Corrección y calidad de vida
+# ---------------------------------------------------------------
+setopt AUTO_CD
+setopt CORRECT
+setopt COMPLETE_ALIASES
 
-mkdir -p ~/.config/zsh
-
-# Cargar módulos si existen
-for f in ~/.config/zsh/*.zsh; do
-  [ -r "$f" ] && source "$f"
-done
-
-
-############################################
-# ZSH PLUGINS (via Homebrew)
-############################################
-
-# Autosuggestions
-[ -f /opt/homebrew/share/zsh-autosuggestions/zsh-autosuggestions.zsh ] && \
-  source /opt/homebrew/share/zsh-autosuggestions/zsh-autosuggestions.zsh
-
-# Syntax Highlighting
-[ -f /opt/homebrew/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh ] && \
-  source /opt/homebrew/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
-
-# History Substring Search
-[ -f /opt/homebrew/share/zsh-history-substring-search/zsh-history-substring-search.zsh ] && \
-  source /opt/homebrew/share/zsh-history-substring-search/zsh-history-substring-search.zsh
-
-
-############################################
-# HISTORIA / TECLAS / TERMINAL
-############################################
-
-setopt histignorealldups
-setopt sharehistory
-setopt incappendhistory
-setopt histfindnodups
-
-bindkey '^[[A' history-substring-search-up
-bindkey '^[[B' history-substring-search-down
-
-autoload -Uz compinit && compinit
-
-
-############################################
-# DOWNLOAD FOLDERS
-############################################
-
-export YT_VIDEO_DIR="$HOME/downloads/youtube/video"
-export YT_AUDIO_DIR="$HOME/downloads/youtube/audio"
-
-mkdir -p "$YT_VIDEO_DIR"
-mkdir -p "$YT_AUDIO_DIR"
-
-
-############################################
-# FUNCIONES AVANZADAS YT-DLP
-############################################
-
-# Descargar video
-ytv() {
-    yt-dlp \
-        --embed-thumbnail \
-        --embed-metadata \
-        -f "bestvideo+bestaudio" \
-        -o "$YT_VIDEO_DIR/%(title)s.%(ext)s" \
-        "$@"
-}
-
-# Descargar música mp3 con portada e ID3
-ytm() {
-    yt-dlp \
-        -x --audio-format mp3 \
-        --embed-thumbnail \
-        --embed-metadata \
-        -o "$YT_AUDIO_DIR/%(title)s.%(ext)s" \
-        "$@"
-}
-
-# Descargar playlist completa (video)
-ytvlist() {
-    yt-dlp \
-        --yes-playlist \
-        --embed-thumbnail \
-        --embed-metadata \
-        -o "$YT_VIDEO_DIR/%(playlist)s/%(title)s.%(ext)s" \
-        "$@"
-}
-
-# Descargar playlist completa (audio)
-ytmlist() {
-    yt-dlp \
-        --yes-playlist \
-        -x --audio-format mp3 \
-        --embed-thumbnail \
-        --embed-metadata \
-        -o "$YT_AUDIO_DIR/%(playlist)s/%(title)s.%(ext)s" \
-        "$@"
-}
-
-
-############################################
-# DOCKER / LAZYDOCKER HELPERS
-############################################
-
-alias lzd="lazydocker"
-alias dcu="docker compose up -d"
-alias dcd="docker compose down"
-alias dps="docker ps --format 'table {{.Names}}\t{{.Image}}\t{{.Status}}\t{{.Ports}}'"
-alias drm="docker rm -f"
-alias dim="docker images"
-
-
-############################################
-# ALIASES BÁSICOS
-############################################
-alias cls="clear"
+# ---------------------------------------------------------------
+# Alias útiles — Comandos abreviados para velocidad
+# ---------------------------------------------------------------
 alias ll="ls -lah"
+alias gs="git status"
+alias gc="git commit"
+alias gp="git push"
+alias d="docker"
+alias dc="docker compose"
 
-
-############################################
-# MENU INTERACTIVO VANITY
-############################################
-
-vanity() {
-    echo ""
-    echo "============================================"
-    echo "            VANITY TERMINAL MENU"
-    echo "============================================"
-    echo " yt-dlp:"
-    echo "   ytv URL         -> Descargar video"
-    echo "   ytm URL         -> Descargar música (mp3)"
-    echo "   ytvlist URL     -> Playlist completa (video)"
-    echo "   ytmlist URL     -> Playlist completa (audio)"
-    echo ""
-    echo " Docker / Server:"
-    echo "   lzd             -> LazyDocker"
-    echo "   dcu             -> docker compose up -d"
-    echo "   dcd             -> docker compose down"
-    echo "   dps             -> Lista de contenedores"
-    echo ""
-    echo " Varias:"
-    echo "   cls             -> limpiar pantalla"
-    echo "   ll              -> listado"
-    echo "============================================"
-    echo ""
-}
-
-
-############################################
-# PATH
-############################################
-
-export PATH="/opt/homebrew/bin:$PATH"
-export PATH="$HOME/.local/bin:$PATH"
-
-
-############################################
-# EDITOR DEFAULT
-############################################
-
-export EDITOR="nano"
-
-
-############################################
-# FIN
-############################################
+# ---------------------------------------------------------------
+# Docker + Portainer
+# ---------------------------------------------------------------
+alias portainer="open http://localhost:9000"
