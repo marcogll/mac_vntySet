@@ -146,7 +146,6 @@ alias dps='docker ps -a'
 alias di='docker images'
 alias dex='docker exec -it'
 alias dlog='docker logs -f'
-alias colima-start='colima start --cpu 4 --memory 8 --disk 60'
 
 # --- NPM ------------------------------------------------------------------
 alias nrs='npm run start'
@@ -269,7 +268,6 @@ fi
 vanity_help() {
   cat <<EOF
 Comandos claves:
-  colima-start    - Arranca el daemon Docker (sin Desktop)
   ytv / ytm / ytls - Descargas con yt-dlp
   venv create/on/off - Manejo rapido de entornos Python
   mkcd / extract / killport / serve - Utilidades basicas

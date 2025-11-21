@@ -1,6 +1,6 @@
 # VanityOS Shell — macOS Developer Setup 🚀
 
-Automatiza en pocos minutos un entorno de desarrollo moderno para macOS. VanityOS Shell instala Zsh optimizado, Oh My Posh, utilidades CLI esenciales, Docker CLI (sin Desktop) con Colima, Portainer y Lazydocker, dejando tu `.zshrc` listo para trabajar.
+Automatiza en pocos minutos un entorno de desarrollo moderno para macOS. VanityOS Shell instala Zsh optimizado, Oh My Posh, utilidades CLI esenciales, Docker CLI (requiere daemon externo) con Portainer y Lazydocker, dejando tu `.zshrc` listo para trabajar.
 
 ---
 
@@ -10,7 +10,8 @@ Automatiza en pocos minutos un entorno de desarrollo moderno para macOS. VanityO
 - Oh My Posh (tema Catppuccin) + fuente Meslo Nerd Font.
 - Node.js, Python, Git, direnv y herramientas base de terminal.
 - yt-dlp + ffmpeg para descargas directas desde YouTube (video y audio).
-- Docker CLI, Colima, Lazydocker y despliegue automático de Portainer CE.
+- Docker CLI, Lazydocker y despliegue automático de Portainer CE (con Docker Desktop preinstalado y arrancado).
+- Ajusta automáticamente la fuente de la app Terminal a Meslo Nerd Font para que Oh My Posh muestre los iconos correctamente.
 - Archivo `.zshrc` documentado para seguir personalizando tu shell.
 
 ## ✅ Requisitos previos
@@ -31,9 +32,9 @@ El script muestra un menú para elegir qué componentes instalar.
 ## 🧩 Opciones del menú
 | Opción | Descripción | Incluye |
 |--------|-------------|---------|
-| `A`    | Instalación completa (recomendada). | Homebrew + stack Zsh + Docker CLI/Colima/Portainer/Lazydocker. |
+| `A`    | Instalación completa (recomendada). | Homebrew + stack Zsh + Docker CLI/Portainer/Lazydocker. |
 | `C`    | Solo configura la terminal. | Homebrew + Zsh, Oh My Zsh, Oh My Posh, utilidades CLI. |
-| `D`    | Solo herramientas de contenedores. | Homebrew + Docker CLI, Colima, Portainer, Lazydocker. |
+| `D`    | Solo herramientas de contenedores. | Homebrew + Docker CLI, Portainer, Lazydocker. |
 | `Q`    | Salir. | — |
 
 ## 🔧 Detalles de la configuración Zsh
@@ -43,18 +44,19 @@ El script muestra un menú para elegir qué componentes instalar.
 - Copia `source ~/.zshrc` al portapapeles para que puedas recargar la shell al finalizar.
 - Genera los directorios `~/videos/youtube` y `~/musica/youtube` y define alias listos para descargar con `ytv <url>` (video completo) y `ytm <url>` (solo audio MP3).
 - Añade un comando `help` dentro de Zsh que describe el uso de estos alias.
+- Cambia la fuente predeterminada de la app Terminal a *MesloLGS Nerd Font* (tamaño 14) para que los iconos de Oh My Posh se vean bien desde el primer arranque.
 
-## 🐳 Stack Docker + Portainer (sin Desktop)
-1. Instala el Docker CLI oficial (`brew install docker docker-buildx docker-compose`).
-2. Instala Colima, que levanta el daemon de Docker usando Hypervisor.framework.
-3. Intenta iniciar Colima automáticamente con `colima start --cpu 4 --memory 8 --disk 60`.
-4. Instala Lazydocker (`brew install lazydocker`).
-5. Despliega Portainer CE con los puertos `8000` y `9443`. Acceso: `https://localhost:9443`.
+## 🐳 Stack Docker + Portainer
+1. Instala el Docker CLI oficial (`brew install docker docker-buildx docker-compose`) y `lazydocker`.
+2. Instala Docker Desktop vía Homebrew Cask y lo abre automáticamente.
+3. Espera a que Docker Desktop termine de iniciar (el script consulta `docker info` hasta tener respuesta).
+4. Cuando el daemon está listo, despliega Portainer CE publicando `8000` y `9443` (`https://localhost:9443`).
 
-> Si Colima no logra iniciar (por ejemplo, porque falta el permiso de virtualización), el script salta Portainer y te recuerda ejecutar `colima start` manualmente antes de volver a elegir la opción `D`.
+> Si Docker Desktop no termina de arrancar, el instalador lo indicará y deberás abrir la app manualmente antes de volver a elegir la opción `D`.
 
 ## ✅ Verificación rápida
 - Recargar Zsh: `source ~/.zshrc`
+- Cierra y vuelve a abrir Terminal: la fuente debe ser MesloLGS Nerd Font con los iconos correctos en el prompt.
 - Comprobar Oh My Posh: el prompt debe mostrar colores y símbolos; si no, ejecuta `oh-my-posh init zsh --config ~/.poshthemes/catppuccin.omp.json`.
 - Verificar Docker: `docker info`
 - Confirmar Portainer: abre `https://localhost:9443` en el navegador.
@@ -70,14 +72,14 @@ El script muestra un menú para elegir qué componentes instalar.
 
 ## ❗️ Solución de problemas
 - **“command not found: brew”**: ejecuta `eval "$(/opt/homebrew/bin/brew shellenv)"` (o `/usr/local/bin/brew`) y vuelve a correr la opción deseada.
-- **Docker no arranca**: ejecuta `colima start` (o `colima status` para verificar) y vuelve a lanzar la opción `D` cuando `docker info` funcione.
+- **Docker no arranca**: abre Docker Desktop y espera a que muestre “Running”; luego ejecuta `docker info` y repite la opción `D`.
 - **Oh My Posh sin fuente correcta**: instala Meslo manualmente desde `~/Library/Fonts` o selecciona *Meslo LG S DZ Nerd Font* en tu terminal.
 - **Conflictos con un `.zshrc` previo**: el instalador hace backup implícito sobrescribiendo `~/.zshrc`. Asegúrate de versionar tu archivo antes si necesitas conservarlo.
 
 ## 🧽 Desinstalación rápida
 - Elimina Portainer: `docker stop portainer && docker rm portainer && docker volume rm portainer_data`.
 - Borra la config Zsh (opcional): `rm -rf ~/.oh-my-zsh ~/.poshthemes ~/.zshrc`.
-- Desinstala apps con Homebrew: `brew uninstall docker colima lazydocker oh-my-posh`.
+- Desinstala apps con Homebrew: `brew uninstall docker docker-buildx docker-compose lazydocker oh-my-posh` y `brew uninstall --cask docker`.
 
 ## 📄 Licencia
 Distribuido bajo la licencia MIT. Consulta `LICENSE` para más detalles.

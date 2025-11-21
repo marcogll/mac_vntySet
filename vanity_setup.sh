@@ -77,6 +77,25 @@ setup_media_dirs() {
   mkdir -p "$HOME/videos/youtube" "$HOME/musica/youtube"
 }
 
+configure_terminal_font() {
+  if ! command -v osascript >/dev/null 2>&1; then
+    return
+  fi
+
+  local font_name="MesloLGS Nerd Font"
+  echo "Configurando Terminal para usar la fuente $font_name…"
+  /usr/bin/osascript <<EOF >/dev/null 2>&1
+tell application "Terminal"
+  try
+    set font name of default settings to "$font_name"
+    set font size of default settings to 14
+    set font name of startup settings to "$font_name"
+    set font size of startup settings to 14
+  end try
+end tell
+EOF
+}
+
 install_oh_my_zsh() {
   echo "Instalando Oh My Zsh y plugins…"
   if [ ! -d "$HOME/.oh-my-zsh" ]; then
@@ -106,6 +125,7 @@ install_zsh_config() {
   install_cli_dependencies
   install_oh_my_zsh
   setup_media_dirs
+  configure_terminal_font
 
   echo "Configurando Oh My Posh…"
   mkdir -p "$HOME/.poshthemes"
@@ -136,43 +156,40 @@ ensure_docker_daemon() {
   fi
 
   echo "No se detectó un demonio de Docker en ejecución." >&2
-  echo "Asegúrate de tener un entorno Docker corriendo (Colima, OrbStack, Docker Desktop, etc)." >&2
+  echo "Asegúrate de que Docker Desktop, OrbStack u otro daemon remoto esté activo." >&2
   return 1
 }
 
-ensure_colima_daemon() {
-  if ensure_docker_daemon; then
-    return 0
-  fi
+wait_for_docker_desktop() {
+  local attempts=0
+  local max_attempts=40
+  local delay=5
 
-  if ! command -v colima >/dev/null 2>&1; then
-    echo "Colima no está instalado; no se puede iniciar un daemon Docker automáticamente." >&2
-    return 1
-  fi
-
-  if colima status >/dev/null 2>&1; then
-    docker context use colima >/dev/null 2>&1 || true
-  else
-    echo "Iniciando daemon de Docker con Colima…"
-    if ! colima start --cpu 4 --memory 8 --disk 60; then
-      echo "No se pudo iniciar Colima automáticamente; ejecútalo manualmente con 'colima start'." >&2
-      return 1
+  echo "Esperando a que Docker Desktop termine de iniciar…"
+  while (( attempts < max_attempts )); do
+    if docker info >/dev/null 2>&1; then
+      echo "Docker Desktop está operativo."
+      return 0
     fi
-  fi
+    sleep "$delay"
+    attempts=$((attempts + 1))
+  done
 
-  sleep 2
-  docker context use colima >/dev/null 2>&1 || true
-  ensure_docker_daemon
-  return $?
+  echo "Docker Desktop no respondió después de $((max_attempts * delay)) segundos." >&2
+  return 1
 }
 
 install_docker_stack() {
   echo "Instalando Docker CLI y utilidades…"
-  brew install docker docker-buildx docker-compose lazydocker colima
+  brew install docker docker-buildx docker-compose lazydocker
+  brew install --cask docker
 
-  if ! ensure_colima_daemon; then
-    echo "Se omitió Portainer porque no hay un daemon Docker en ejecución." >&2
-    echo "Sugerencia: inicia Colima manualmente con 'colima start' y vuelve a ejecutar la opción D." >&2
+  echo "Abriendo Docker Desktop…"
+  open -gj -a Docker || open -a Docker || true
+
+  if ! wait_for_docker_desktop; then
+    echo "Se omitió Portainer porque Docker Desktop no está listo." >&2
+    echo "Abre Docker Desktop manualmente y vuelve a ejecutar la opción D." >&2
     return
   fi
 
@@ -234,8 +251,9 @@ BANNER
 
 echo ""
 main_menu
-
 echo "=============================================="
 echo " Instalación completada."
 echo "=============================================="
 echo ""
+echo "Para aplicar la configuración ejecuta ahora:"
+echo "source ~/.zshrc"
