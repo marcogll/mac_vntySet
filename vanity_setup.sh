@@ -207,6 +207,29 @@ install_docker_stack() {
     portainer/portainer-ce:latest >/dev/null
 }
 
+read_menu_choice() {
+  local prompt="$1"
+  local response=""
+
+  printf "%s" "$prompt"
+  if [ -t 0 ]; then
+    if read -r response; then
+      printf "\n"
+      printf '%s\n' "$response"
+      return 0
+    fi
+  elif [ -r /dev/tty ]; then
+    if read -r response < /dev/tty; then
+      printf "\n"
+      printf '%s\n' "$response"
+      return 0
+    fi
+  fi
+
+  printf "\n"
+  return 1
+}
+
 main_menu() {
   echo "Selecciona una opción:"
   echo " A) Instalar TODO (recomendado)"
@@ -214,7 +237,11 @@ main_menu() {
   echo " D) Instalar Docker + Portainer + Lazydocker"
   echo " Q) Salir"
   echo ""
-  read -r -p "Opción [A/C/D/Q]: " choice
+  local choice=""
+  if ! choice="$(read_menu_choice "Opción [A/C/D/Q]: ")"; then
+    echo "No se detecta una entrada interactiva; se seleccionará la opción 'A' por defecto."
+    choice="A"
+  fi
   echo ""
   case "${choice:-A}" in
     A|a)
