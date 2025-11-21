@@ -8,7 +8,7 @@ Automatiza en pocos minutos un entorno de desarrollo moderno para macOS. VanityO
 - Homebrew configurado para Apple Silicon o Intel.
 - Zsh + Oh My Zsh con plugins (`zsh-autosuggestions`, `zsh-syntax-highlighting`, `zsh-completions`).
 - Oh My Posh (tema Catppuccin) + fuente Meslo Nerd Font.
-- Node.js, Python, Git, direnv y herramientas base de terminal (incluyendo ZeroTier CLI y Speedtest CLI).
+7- Node.js, Python, Git, direnv y herramientas base de terminal (incluyendo ZeroTier CLI y Speedtest CLI).
 - yt-dlp + ffmpeg para descargas directas desde YouTube (video y audio).
 - Docker CLI, Lazydocker y despliegue automático de Portainer CE (con Docker Desktop preinstalado y arrancado).
 - Ajusta automáticamente la fuente de la app Terminal a Meslo Nerd Font para que Oh My Posh muestre los iconos correctamente.
