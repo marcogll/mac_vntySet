@@ -127,7 +127,7 @@ install_zsh_config() {
 
 ensure_docker_daemon() {
   if ! command -v docker >/dev/null 2>&1; then
-    echo "El CLI de Docker no está disponible todavía." >&2
+    echo "El CLI de Docker no está disponible." >&2
     return 1
   fi
 
@@ -135,27 +135,14 @@ ensure_docker_daemon() {
     return 0
   fi
 
-  if command -v open >/dev/null 2>&1; then
-    echo "Iniciando Docker Desktop…"
-    open -g -a Docker >/dev/null 2>&1 || true
-  else
-    echo "Abre Docker Desktop manualmente para continuar." >&2
-  fi
-
-  for _ in {1..20}; do
-    sleep 6
-    if docker info >/dev/null 2>&1; then
-      return 0
-    fi
-  done
-
-  echo "Docker Desktop no está listo. Abre la aplicación y vuelve a ejecutar la opción D." >&2
+  echo "No se detectó un demonio de Docker en ejecución." >&2
+  echo "Asegúrate de tener un entorno Docker corriendo (Docker Desktop, Colima, OrbStack, etc)." >&2
   return 1
 }
 
 install_docker_stack() {
-  echo "Instalando Docker Desktop…"
-  brew install --cask docker
+  echo "Instalando Docker CLI..."
+  brew install docker
 
   echo "Instalando Lazydocker…"
   brew install lazydocker
