@@ -136,19 +136,43 @@ ensure_docker_daemon() {
   fi
 
   echo "No se detectó un demonio de Docker en ejecución." >&2
-  echo "Asegúrate de tener un entorno Docker corriendo (Docker Desktop, Colima, OrbStack, etc)." >&2
+  echo "Asegúrate de tener un entorno Docker corriendo (Colima, OrbStack, Docker Desktop, etc)." >&2
   return 1
 }
 
+ensure_colima_daemon() {
+  if ensure_docker_daemon; then
+    return 0
+  fi
+
+  if ! command -v colima >/dev/null 2>&1; then
+    echo "Colima no está instalado; no se puede iniciar un daemon Docker automáticamente." >&2
+    return 1
+  fi
+
+  if colima status >/dev/null 2>&1; then
+    docker context use colima >/dev/null 2>&1 || true
+  else
+    echo "Iniciando daemon de Docker con Colima…"
+    if ! colima start --cpu 4 --memory 8 --disk 60; then
+      echo "No se pudo iniciar Colima automáticamente; ejecútalo manualmente con 'colima start'." >&2
+      return 1
+    fi
+  fi
+
+  sleep 2
+  docker context use colima >/dev/null 2>&1 || true
+  ensure_docker_daemon
+  return $?
+}
+
 install_docker_stack() {
-  echo "Instalando Docker CLI..."
-  brew install docker
+  echo "Instalando Docker CLI y utilidades…"
+  brew install docker docker-buildx docker-compose lazydocker colima
 
-  echo "Instalando Lazydocker…"
-  brew install lazydocker
-
-  if ! ensure_docker_daemon; then
-    echo "Se omitió Portainer porque Docker no está operativo."
+  if ! ensure_colima_daemon; then
+    echo "Se omitió Portainer porque no hay un daemon Docker en ejecución." >&2
+    echo "Sugerencia: inicia Colima manualmente con 'colima start' y vuelve a ejecutar la opción D." >&2
     return
   fi
 
