@@ -135,7 +135,7 @@ alias gcb='git checkout -b'
 alias glog='git log --oneline --graph --decorate'
 gac() { git add . && git commit -m "$1"; }
 
-# --- Docker / Colima ------------------------------------------------------
+# --- Docker Desktop ------------------------------------------------------
 if docker compose version >/dev/null 2>&1; then
   alias dc='docker compose'
 else
@@ -184,6 +184,8 @@ killport() {
 serve() { python -m http.server "${1:-8000}"; }
 
 # --- yt-dlp ---------------------------------------------------------------
+# Mantiene los videos en ~/Movies/Youtube y el audio en ~/Music/Youtube
+# para que aparezcan dentro de las apps de macOS (TV / Música) si así lo deseas.
 export YTDLP_VIDEO_DIR="$HOME/Movies/Youtube"
 export YTDLP_AUDIO_DIR="$HOME/Music/Youtube"
 mkdir -p "$YTDLP_VIDEO_DIR" "$YTDLP_AUDIO_DIR" >/dev/null 2>&1
@@ -269,16 +271,31 @@ fi
 # --- Ayuda rapida ---------------------------------------------------------
 vanity_help() {
   cat <<'EOF'
-Vanity CLI — comandos principales:
-  ytv <url> [calidad]    Descarga videos en ~/Movies/Youtube (calidad: best/1080/720/480).
-  ytm <url>              Extrae audio MP3 a ~/Music/Youtube con metadatos y caratula.
-  ytls                   Lista los ultimos archivos descargados por ytv/ytm.
-  venv create|on|off     Simplifica la creacion y activacion de entornos Python (.venv).
-  mkcd <ruta>            Crea un directorio y cambia a el en un paso.
-  extract <archivo>      Descomprime en el formato correcto automaticamente.
-  killport <puerto>      Mata cualquier proceso que use el puerto indicado.
-  serve [puerto]         Sirve la carpeta actual via HTTP (por defecto 8000).
-  reload                 Recarga la configuracion actual (~/.zshrc).
+Vanity CLI — ayuda rapida
+
+Multimedia:
+  ytv <url> [1080|720|480|best]   Descarga videos MP4 en ~/Movies/Youtube con metadatos.
+  ytm <url>                       Extrae audio MP3 en ~/Music/Youtube (incluye arte y metadata).
+  ytls                            Muestra los ultimos archivos bajados por ytv/ytm.
+
+Productividad:
+  venv create|on|off              Crea/activa/desactiva entornos Python en .venv.
+  mkcd <ruta>                     Crea un directorio y entra en el con un solo comando.
+  extract <archivo>               Detecta extension y descomprime automaticamente.
+  killport <puerto>               Elimina procesos que usan el puerto indicado.
+  serve [puerto]                  Levanta un servidor HTTP simple (default 8000).
+  reload                          Recarga ~/.zshrc para aplicar cambios al instante.
+
+Contenedores:
+  d / dc / dps / dlog             Alias para Docker CLI y docker compose via Docker Desktop.
+  lazydocker                      UI en terminal para revisar contenedores.
+
+Red/Utilidades:
+  zerotier-cli info               Muestra el estado del cliente ZeroTier.
+  speedtest-cli                   Ejecuta una prueba rapida de velocidad.
+  clima                           Clima de CDMX directamente en la terminal.
+
+Tip: ejecuta 'help' en cualquier momento para ver este listado.
 EOF
 }
 alias help='vanity_help'
