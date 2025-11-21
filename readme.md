@@ -8,7 +8,7 @@ Automatiza en pocos minutos un entorno de desarrollo moderno para macOS. VanityO
 - Homebrew configurado para Apple Silicon o Intel.
 - Zsh + Oh My Zsh con plugins (`zsh-autosuggestions`, `zsh-syntax-highlighting`, `zsh-completions`).
 - Oh My Posh (tema Catppuccin) + fuente Meslo Nerd Font.
-- Node.js, Python, Git, direnv y herramientas base de terminal.
+- Node.js, Python, Git, direnv y herramientas base de terminal (incluyendo ZeroTier CLI y Speedtest CLI).
 - yt-dlp + ffmpeg para descargas directas desde YouTube (video y audio).
 - Docker CLI, Lazydocker y despliegue automático de Portainer CE (con Docker Desktop preinstalado y arrancado).
 - Ajusta automáticamente la fuente de la app Terminal a Meslo Nerd Font para que Oh My Posh muestre los iconos correctamente.
@@ -17,7 +17,7 @@ Automatiza en pocos minutos un entorno de desarrollo moderno para macOS. VanityO
 ## ✅ Requisitos previos
 - macOS 12+ (Intel o Apple Silicon).
 - Conexión estable a internet y espacio libre (~5 GB para Docker).
-- Se recomienda instalar las Xcode Command Line Tools antes de iniciar:
+- Las Xcode Command Line Tools se instalan automáticamente si no están presentes; si prefieres hacerlo antes de correr el script, ejecuta:
   ```bash
   xcode-select --install
   ```
@@ -72,6 +72,8 @@ Cada ejecución genera un registro detallado en `.logs/vanity-YYYYmmdd-HHMMSS.lo
 - Verificar Docker: `docker info`
 - Confirmar Portainer: abre `https://localhost:9443` en el navegador.
 - Lanzar Lazydocker: `lazydocker`
+- Probar ZeroTier CLI: `zerotier-cli info`
+- Ejecutar una prueba rápida de red: `speedtest-cli`
 - Descargar un video de prueba: `ytv https://youtu.be/<ID>`
 - Descargar solo audio: `ytm https://youtu.be/<ID>`
 - Ver ayuda rápida: ejecuta `help`

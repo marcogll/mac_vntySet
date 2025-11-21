@@ -46,6 +46,8 @@ ensure_brew_shellenv() {
 }
 
 install_homebrew() {
+  ensure_xcode_clt
+
   if [ -z "$BREW_BIN" ] && [ ! -x /opt/homebrew/bin/brew ] && [ ! -x /usr/local/bin/brew ]; then
     echo "Instalando Homebrew…"
     NONINTERACTIVE=1 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
@@ -65,7 +67,7 @@ install_homebrew() {
 
 install_cli_dependencies() {
   echo "Instalando herramientas base de desarrollo…"
-  brew install zsh curl wget git jq yq node python go direnv yt-dlp ffmpeg
+  brew install zsh curl wget git jq yq node python go direnv yt-dlp ffmpeg zerotier-one speedtest-cli
 
   echo "Instalando Oh My Posh y fuentes Nerd Font…"
   brew tap homebrew/cask-fonts >/dev/null 2>&1 || true
@@ -207,6 +209,59 @@ install_docker_stack() {
     portainer/portainer-ce:latest >/dev/null
 }
 
+ensure_xcode_clt() {
+  if xcode-select -p >/dev/null 2>&1; then
+    return
+  fi
+
+  echo "Instalando Xcode Command Line Tools…"
+  echo "macOS abrirá un diálogo gráfico; acepta la instalación para continuar."
+
+  if ! /usr/bin/xcode-select --install >/dev/null 2>&1; then
+    if xcode-select -p >/dev/null 2>&1; then
+      return
+    fi
+    echo "No se pudo iniciar la instalación automática. Ejecuta 'xcode-select --install' manualmente y vuelve a intentarlo." >&2
+    exit 1
+  fi
+
+  wait_for_enter "Una vez que la instalación gráfica termine, presiona Enter para continuar… "
+
+  local attempts=0
+  local max_attempts=60
+  while ! xcode-select -p >/dev/null 2>&1; do
+    sleep 5
+    attempts=$((attempts + 1))
+    if (( attempts >= max_attempts )); then
+      echo "No se detectó la instalación de las Xcode Command Line Tools tras varios intentos." >&2
+      echo "Instálalas manualmente con 'xcode-select --install' y vuelve a ejecutar este script." >&2
+      exit 1
+    fi
+  done
+
+  echo "Xcode Command Line Tools instaladas correctamente."
+}
+
+wait_for_enter() {
+  local prompt="$1"
+
+  if [ -t 0 ]; then
+    read -r -p "$prompt" _
+    printf "\n"
+    return 0
+  fi
+
+  if [ -r /dev/tty ]; then
+    printf "%s" "$prompt" > /dev/tty
+    read -r _ < /dev/tty
+    printf "\n"
+    return 0
+  fi
+
+  printf "%s\n" "$prompt"
+  return 1
+}
+
 read_menu_choice() {
   local prompt="$1"
 
@@ -288,5 +343,5 @@ echo ""
 echo "Para aplicar la configuración ejecuta ahora:"
 echo "source ~/.zshrc"
 echo ""
-read -r -p "Presiona Enter una vez hayas ejecutado el comando anterior en tu terminal… " _
+wait_for_enter "Presiona Enter una vez hayas ejecutado el comando anterior en tu terminal… "
 echo "Reinicia tu Mac para asegurarte de que todas las herramientas queden listas para el próximo arranque."
