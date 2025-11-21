@@ -2,6 +2,20 @@
 
 set -euo pipefail
 
+SCRIPT_PATH=${BASH_SOURCE[0]:-$0}
+if [[ "$SCRIPT_PATH" == "bash" || "$SCRIPT_PATH" == "-bash" ]]; then
+  SCRIPT_DIR="$PWD"
+else
+  SCRIPT_DIR=$(cd "$(dirname "$SCRIPT_PATH")" >/dev/null 2>&1 && pwd -P) || SCRIPT_DIR="$PWD"
+fi
+
+LOG_DIR="$SCRIPT_DIR/.logs"
+mkdir -p "$LOG_DIR"
+LOG_FILE="$LOG_DIR/vanity-$(date +%Y%m%d-%H%M%S).log"
+touch "$LOG_FILE"
+exec > >(tee -a "$LOG_FILE") 2>&1
+echo "Log de instalación: $LOG_FILE"
+
 readonly POSH_THEME_URL="https://raw.githubusercontent.com/JanDeDobbeleer/oh-my-posh/main/themes/catppuccin.omp.json"
 readonly ZSHRC_URL="https://raw.githubusercontent.com/marcogll/mac_vntySet/main/.zshrc.example"
 readonly POSH_THEME_PATH="$HOME/.poshthemes/catppuccin.omp.json"
