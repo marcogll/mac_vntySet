@@ -65,14 +65,55 @@ install_homebrew() {
   brew update
 }
 
+brew_ensure_formula() {
+  local formula="$1"
+  if brew list --formula "$formula" >/dev/null 2>&1; then
+    echo "✔︎ ${formula} ya está instalado. Omitiendo."
+    return
+  fi
+
+  echo "➜ Instalando ${formula}…"
+  brew install "$formula"
+}
+
+brew_ensure_cask() {
+  local cask="$1"
+  if brew list --cask "$cask" >/dev/null 2>&1; then
+    echo "✔︎ ${cask} ya está instalado. Omitiendo."
+    return
+  fi
+
+  echo "➜ Instalando ${cask}…"
+  brew install --cask "$cask"
+}
+
 install_cli_dependencies() {
   echo "Instalando herramientas base de desarrollo…"
-  brew install zsh curl wget git jq yq node python go direnv yt-dlp ffmpeg zerotier-one speedtest-cli
+  local formulas=(
+    zsh
+    curl
+    wget
+    git
+    jq
+    yq
+    node
+    python
+    go
+    direnv
+    yt-dlp
+    ffmpeg
+    speedtest-cli
+    jandedobbeleer/oh-my-posh/oh-my-posh
+  )
+
+  for formula in "${formulas[@]}"; do
+    brew_ensure_formula "$formula"
+  done
 
   echo "Instalando Oh My Posh y fuentes Nerd Font…"
   brew tap homebrew/cask-fonts >/dev/null 2>&1 || true
-  brew install --cask --force font-meslo-lg-nerd-font
-  brew install jandedobbeleer/oh-my-posh/oh-my-posh
+  brew_ensure_cask font-meslo-lg-nerd-font
+  brew_ensure_cask zerotier-one
 }
 
 setup_media_dirs() {
@@ -294,6 +335,7 @@ main_menu() {
   echo " A) Instalar TODO (recomendado)"
   echo " C) Instalar solo configuración ZSH"
   echo " D) Instalar Docker + Portainer + Lazydocker"
+  echo " U) Actualizar componentes instalados"
   echo " Q) Salir"
   echo ""
   local choice=""
@@ -316,6 +358,12 @@ main_menu() {
       ;;
     D|d)
       install_homebrew
+      install_docker_stack
+      ;;
+    U|u)
+      echo "Actualizando la instalación existente…"
+      install_homebrew
+      install_zsh_config
       install_docker_stack
       ;;
     Q|q)

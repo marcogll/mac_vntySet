@@ -28,6 +28,7 @@ Ejecuta el instalador directamente desde la terminal (usa bash, no zsh):
 curl -fsSL https://raw.githubusercontent.com/marcogll/mac_vntySet/main/vanity_setup.sh | bash
 ```
 El script muestra un menú para elegir qué componentes instalar.
+También puedes volver a ejecutarlo más adelante y elegir la opción `U` para actualizar todos los componentes provisionados por VanityOS Shell.
 
 ## 💻 Ejecución local
 También puedes clonar este repositorio y ejecutar el instalador de forma local:
@@ -45,6 +46,7 @@ Cada ejecución genera un registro detallado en `.logs/vanity-YYYYmmdd-HHMMSS.lo
 | `A`    | Instalación completa (recomendada). | Homebrew + stack Zsh + Docker CLI/Portainer/Lazydocker. |
 | `C`    | Solo configura la terminal. | Homebrew + Zsh, Oh My Zsh, Oh My Posh, utilidades CLI. |
 | `D`    | Solo herramientas de contenedores. | Homebrew + Docker CLI, Portainer, Lazydocker. |
+| `U`    | Actualiza la instalación existente. | Repite la instalación completa para asegurar versiones recientes. |
 | `Q`    | Salir. | — |
 
 ## 🔧 Detalles de la configuración Zsh
