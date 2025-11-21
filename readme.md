@@ -29,6 +29,16 @@ curl -fsSL https://raw.githubusercontent.com/marcogll/mac_vntySet/main/vanity_se
 ```
 El script muestra un menú para elegir qué componentes instalar.
 
+## 💻 Ejecución local
+También puedes clonar este repositorio y ejecutar el instalador de forma local:
+```bash
+git clone https://github.com/marcogll/mac_vntySet.git
+cd mac_vntySet
+chmod +x vanity_setup.sh
+bash vanity_setup.sh
+```
+Cada ejecución genera un registro detallado en `.logs/vanity-YYYYmmdd-HHMMSS.log` dentro del repositorio, útil para depurar si algo falla.
+
 ## 🧩 Opciones del menú
 | Opción | Descripción | Incluye |
 |--------|-------------|---------|
@@ -56,6 +66,7 @@ El script muestra un menú para elegir qué componentes instalar.
 
 ## ✅ Verificación rápida
 - Recargar Zsh: `source ~/.zshrc`
+- Reinicia tu Mac después de ejecutar el comando anterior para que la fuente y los servicios se apliquen en todo el sistema.
 - Cierra y vuelve a abrir Terminal: la fuente debe ser MesloLGS Nerd Font con los iconos correctos en el prompt.
 - Comprobar Oh My Posh: el prompt debe mostrar colores y símbolos; si no, ejecuta `oh-my-posh init zsh --config ~/.poshthemes/catppuccin.omp.json`.
 - Verificar Docker: `docker info`

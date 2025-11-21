@@ -257,3 +257,6 @@ echo "=============================================="
 echo ""
 echo "Para aplicar la configuración ejecuta ahora:"
 echo "source ~/.zshrc"
+echo ""
+read -r -p "Presiona Enter una vez hayas ejecutado el comando anterior en tu terminal… " _
+echo "Reinicia tu Mac para asegurarte de que todas las herramientas queden listas para el próximo arranque."
