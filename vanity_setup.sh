@@ -209,19 +209,20 @@ install_docker_stack() {
 
 read_menu_choice() {
   local prompt="$1"
-  local response=""
 
-  printf "%s" "$prompt"
   if [ -t 0 ]; then
-    if read -r response; then
+    if read -r -p "$prompt" REPLY; then
       printf "\n"
-      printf '%s\n' "$response"
       return 0
     fi
-  elif [ -r /dev/tty ]; then
-    if read -r response < /dev/tty; then
+    printf "\n"
+    return 1
+  fi
+
+  if [ -r /dev/tty ]; then
+    printf "%s" "$prompt" > /dev/tty
+    if read -r REPLY < /dev/tty; then
       printf "\n"
-      printf '%s\n' "$response"
       return 0
     fi
   fi
@@ -238,7 +239,9 @@ main_menu() {
   echo " Q) Salir"
   echo ""
   local choice=""
-  if ! choice="$(read_menu_choice "Opción [A/C/D/Q]: ")"; then
+  if read_menu_choice "Opción [A/C/D/Q]: "; then
+    choice="$REPLY"
+  else
     echo "No se detecta una entrada interactiva; se seleccionará la opción 'A' por defecto."
     choice="A"
   fi
