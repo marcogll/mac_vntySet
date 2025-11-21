@@ -69,7 +69,7 @@ install_cli_dependencies() {
 
   echo "Instalando Oh My Posh y fuentes Nerd Font…"
   brew tap homebrew/cask-fonts >/dev/null 2>&1 || true
-  brew install --cask font-meslo-lg-nerd-font
+  brew install --cask --force font-meslo-lg-nerd-font
   brew install jandedobbeleer/oh-my-posh/oh-my-posh
 }
 
