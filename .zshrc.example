@@ -184,22 +184,24 @@ killport() {
 serve() { python -m http.server "${1:-8000}"; }
 
 # --- yt-dlp ---------------------------------------------------------------
-export YTDLP_DIR="$HOME/videos/youtube"
-mkdir -p "$YTDLP_DIR"/{audio,video} >/dev/null 2>&1
+export YTDLP_VIDEO_DIR="$HOME/Movies/Youtube"
+export YTDLP_AUDIO_DIR="$HOME/Music/Youtube"
+mkdir -p "$YTDLP_VIDEO_DIR" "$YTDLP_AUDIO_DIR" >/dev/null 2>&1
 
 ytm() {
   if [[ -z "$1" || "$1" == "-h" || "$1" == "--help" ]]; then
-    echo "Uso: ytm <url|busqueda> - Descarga audio MP3 en $YTDLP_DIR/audio"
+    echo "Uso: ytm <url|busqueda> - Descarga audio MP3 en $YTDLP_AUDIO_DIR (calidad maxima)."
     return 0
   fi
   yt-dlp -f bestaudio --extract-audio --audio-format mp3 --audio-quality 0 \
     --embed-metadata --embed-thumbnail \
-    -o "$YTDLP_DIR/audio/%(title).180s.%(ext)s" "$1"
+    -o "$YTDLP_AUDIO_DIR/%(title).180s.%(ext)s" "$1"
 }
 
 ytv() {
   if [[ -z "$1" ]]; then
-    echo "Uso: ytv <url|busqueda> [1080|720|480]" && return 1
+    echo "Uso: ytv <url|busqueda> [1080|720|480|best] - Descarga video MP4 en $YTDLP_VIDEO_DIR."
+    return 1
   fi
   local quality="${2:-best}"
   local fmt
@@ -210,14 +212,14 @@ ytv() {
     *) fmt='bv*[ext=mp4]+ba/b[ext=mp4]/b' ;;
   esac
   yt-dlp -f "$fmt" --embed-subs --embed-metadata --embed-thumbnail \
-    -o "$YTDLP_DIR/video/%(title).180s.%(ext)s" "$1"
+    -o "$YTDLP_VIDEO_DIR/%(title).180s.%(ext)s" "$1"
 }
 
 ytls() {
-  echo "Audios recientes:"
-  ls -1t "$YTDLP_DIR/audio" 2>/dev/null | head -5 | sed 's/^/  /' || echo "  (vacio)"
-  echo "Videos recientes:"
-  ls -1t "$YTDLP_DIR/video" 2>/dev/null | head -5 | sed 's/^/  /' || echo "  (vacio)"
+  echo "Audios recientes ($YTDLP_AUDIO_DIR):"
+  ls -1t "$YTDLP_AUDIO_DIR" 2>/dev/null | head -5 | sed 's/^/  /' || echo "  (vacio)"
+  echo "Videos recientes ($YTDLP_VIDEO_DIR):"
+  ls -1t "$YTDLP_VIDEO_DIR" 2>/dev/null | head -5 | sed 's/^/  /' || echo "  (vacio)"
 }
 
 # --- SSH Agent ------------------------------------------------------------
@@ -266,14 +268,19 @@ fi
 
 # --- Ayuda rapida ---------------------------------------------------------
 vanity_help() {
-  cat <<EOF
-Comandos claves:
-  ytv / ytm / ytls - Descargas con yt-dlp
-  venv create/on/off - Manejo rapido de entornos Python
-  mkcd / extract / killport / serve - Utilidades basicas
-  reload          - Recarga este archivo
+  cat <<'EOF'
+Vanity CLI — comandos principales:
+  ytv <url> [calidad]    Descarga videos en ~/Movies/Youtube (calidad: best/1080/720/480).
+  ytm <url>              Extrae audio MP3 a ~/Music/Youtube con metadatos y caratula.
+  ytls                   Lista los ultimos archivos descargados por ytv/ytm.
+  venv create|on|off     Simplifica la creacion y activacion de entornos Python (.venv).
+  mkcd <ruta>            Crea un directorio y cambia a el en un paso.
+  extract <archivo>      Descomprime en el formato correcto automaticamente.
+  killport <puerto>      Mata cualquier proceso que use el puerto indicado.
+  serve [puerto]         Sirve la carpeta actual via HTTP (por defecto 8000).
+  reload                 Recarga la configuracion actual (~/.zshrc).
 EOF
 }
 alias help='vanity_help'
 
-echo "[Vanity Shell] Ejecuta 'help' para ver los comandos principales."
+echo "Vanity CLI | 'help' sirve para ver los comandos."

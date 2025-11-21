@@ -117,7 +117,7 @@ install_cli_dependencies() {
 }
 
 setup_media_dirs() {
-  mkdir -p "$HOME/videos/youtube" "$HOME/musica/youtube"
+  mkdir -p "$HOME/Movies/Youtube" "$HOME/Music/Youtube"
 }
 
 configure_terminal_font() {
@@ -339,7 +339,7 @@ main_menu() {
   echo " Q) Salir"
   echo ""
   local choice=""
-  if read_menu_choice "Opción [A/C/D/Q]: "; then
+  if read_menu_choice "Opción [A/C/D/U/Q]: "; then
     choice="$REPLY"
   else
     echo "No se detecta una entrada interactiva; se seleccionará la opción 'A' por defecto."
@@ -396,3 +396,4 @@ echo "source ~/.zshrc"
 echo ""
 wait_for_enter "Presiona Enter una vez hayas ejecutado el comando anterior en tu terminal… "
 echo "Reinicia tu Mac para asegurarte de que todas las herramientas queden listas para el próximo arranque."
+echo "Vanity CLI | 'help' sirve para ver los comandos."

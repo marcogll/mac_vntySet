@@ -54,7 +54,7 @@ Cada ejecución genera un registro detallado en `.logs/vanity-YYYYmmdd-HHMMSS.lo
 - Instala los plugins necesarios y refresca sus repositorios si ya existen.
 - Coloca el tema Catppuccin en `~/.poshthemes` y activa Oh My Posh automáticamente.
 - Copia `source ~/.zshrc` al portapapeles para que puedas recargar la shell al finalizar.
-- Genera los directorios `~/videos/youtube` y `~/musica/youtube` y define alias listos para descargar con `ytv <url>` (video completo) y `ytm <url>` (solo audio MP3).
+- Genera los directorios `~/Movies/Youtube` y `~/Music/Youtube` y define alias listos para descargar con `ytv <url>` (video completo) y `ytm <url>` (solo audio MP3).
 - Añade un comando `help` dentro de Zsh que describe el uso de estos alias.
 - Cambia la fuente predeterminada de la app Terminal a *MesloLGS Nerd Font* (tamaño 14) para que los iconos de Oh My Posh se vean bien desde el primer arranque.
 
