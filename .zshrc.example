@@ -37,7 +37,7 @@ ZSH_THEME="" # el prompt final lo gestiona Oh My Posh
 
 plugins=(
   git sudo history colorize
-  docker docker-compose
+
   npm node python pip golang
   copypath copyfile
   zsh-autosuggestions
