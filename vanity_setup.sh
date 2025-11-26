@@ -358,6 +358,14 @@ install_docker_stack() {
     portainer/portainer-ce:latest >/dev/null
 }
 
+update_packages() {
+  echo "Actualizando la lista de paquetes de Homebrew…"
+  install_homebrew
+  echo "Actualizando todos los paquetes de Homebrew instalados…"
+  brew upgrade
+  echo "Todos los paquetes han sido actualizados."
+}
+
 ensure_xcode_clt() {
   if xcode-select -p >/dev/null 2>&1; then
     return
@@ -440,11 +448,12 @@ main_menu() {
   echo " A) Instalar TODO (recomendado)"
   echo " C) Instalar solo configuración ZSH"
   echo " D) Instalar Docker + Portainer + Lazydocker"
+  echo " P) Actualizar paquetes Homebrew"
   echo " U) Actualizar componentes instalados"
   echo " Q) Salir"
   echo ""
   local choice=""
-  if read_menu_choice "Opción [A/C/D/U/Q]: "; then
+  if read_menu_choice "Opción [A/C/D/P/U/Q]: "; then
     choice="$REPLY"
   else
     echo "No se detecta una entrada interactiva; se seleccionará la opción 'A' por defecto."
@@ -464,6 +473,9 @@ main_menu() {
     D|d)
       install_homebrew
       install_docker_stack
+      ;;
+    P|p)
+      update_packages
       ;;
     U|u)
       echo "Actualizando la instalación existente…"
