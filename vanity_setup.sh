@@ -138,7 +138,12 @@ install_homebrew() {
 brew_ensure_formula() {
   local formula="$1"
   if brew list --formula "$formula" >/dev/null 2>&1; then
-    echo "✔︎ ${formula} ya está instalado. Omitiendo."
+    if [[ "$formula" == "yt-dlp" ]]; then
+      echo "➜ yt-dlp ya está instalado. Actualizando a la última versión…"
+      brew upgrade yt-dlp
+    else
+      echo "✔︎ ${formula} ya está instalado. Omitiendo."
+    fi
     return
   fi
 
@@ -266,11 +271,22 @@ install_zsh_config() {
   mkdir -p "$HOME/.poshthemes"
   curl -fsSL "$POSH_THEME_URL" -o "$POSH_THEME_PATH"
 
-  echo "Descargando .zshrc de Vanity Shell…"
-  if ! curl -fsSL "$ZSHRC_URL" -o "$HOME/.zshrc"; then
+  echo "Descargando y configurando .zshrc de Vanity Shell…"
+  local zshrc_content
+  if ! zshrc_content=$(curl -fsSL "$ZSHRC_URL"); then
     echo "No se pudo descargar la configuración de ZSH." >&2
     exit 1
   fi
+
+  local brew_init_line=""
+  if [ -n "$BREW_BIN" ]; then
+    # Esta línea se añade al principio para garantizar que el PATH de Homebrew
+    # se configure ANTES de que Oh My Zsh intente cargar plugins como 'docker'.
+    brew_init_line="eval \"\$($BREW_BIN shellenv)\""
+  fi
+
+  # Combina la inicialización de Homebrew con el contenido descargado
+  echo -e "${brew_init_line}\n\n${zshrc_content}" > "$HOME/.zshrc"
 
   if command -v pbcopy >/dev/null 2>&1; then
     echo "source ~/.zshrc" | pbcopy
