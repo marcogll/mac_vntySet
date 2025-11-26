@@ -44,23 +44,59 @@ retry_command() {
   return 0
 }
 
+readonly GITHUB_CLONE_PREFIXES=(
+  "https://github.com/"
+  "https://ghproxy.com/https://github.com/"
+  "https://hub.fastgit.org/"
+  "https://github.com.cnpmjs.org/"
+)
+
+readonly ARCHIVE_TEMPLATES=(
+  "https://codeload.github.com/%s/tar.gz/HEAD"
+  "https://ghproxy.com/https://codeload.github.com/%s/tar.gz/HEAD"
+  "https://github.com/%s/archive/HEAD.tar.gz"
+  "https://ghproxy.com/https://github.com/%s/archive/HEAD.tar.gz"
+)
+
+clone_plugin_repo() {
+  local repo="$1"
+  local destination="$2"
+
+  if ! command -v git >/dev/null 2>&1; then
+    return 1
+  fi
+
+  for prefix in "${GITHUB_CLONE_PREFIXES[@]}"; do
+    rm -rf "$destination"
+    local url="${prefix}${repo}.git"
+    if retry_command git clone "$url" "$destination"; then
+      return 0
+    fi
+  done
+
+  return 1
+}
+
 download_plugin_archive() {
   local repo="$1"
   local destination="$2"
-  local archive_url="https://codeload.github.com/${repo}/tar.gz/HEAD"
 
   if ! command -v curl >/dev/null 2>&1; then
     return 1
   fi
 
   rm -rf "$destination"
-  mkdir -p "$destination"
+  for template in "${ARCHIVE_TEMPLATES[@]}"; do
+    mkdir -p "$destination"
+    local archive_url
+    archive_url=$(printf "$template" "$repo")
+    if curl -fsSL "$archive_url" | tar -xzf - -C "$destination" --strip-components=1 >/dev/null 2>&1; then
+      return 0
+    fi
+    rm -rf "$destination"
+  done
 
-  if ! curl -fsSL "$archive_url" | tar -xzf - -C "$destination" --strip-components=1 >/dev/null 2>&1; then
-    return 1
-  fi
-
-  return 0
+  return 1
 }
 
 ensure_brew_shellenv() {
@@ -198,7 +234,7 @@ install_oh_my_zsh() {
       continue
     fi
 
-    if retry_command git clone "https://github.com/${repo}.git" "$destination"; then
+    if clone_plugin_repo "$repo" "$destination"; then
       continue
     fi
 
