@@ -154,7 +154,16 @@ brew_ensure_cask() {
   fi
 
   echo "➜ Instalando ${cask}…"
-  brew install --cask "$cask"
+  local output
+  if ! output=$(brew install --cask "$cask" 2>&1); then
+    if [[ "$output" == *"already a Font at"* ]]; then
+      echo "✔︎ La fuente de ${cask} ya existe. Omitiendo."
+    else
+      echo "$output" >&2
+      echo "Error al instalar ${cask}." >&2
+      return 1
+    fi
+  fi
 }
 
 install_cli_dependencies() {
