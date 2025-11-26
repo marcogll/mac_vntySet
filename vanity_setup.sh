@@ -277,17 +277,15 @@ install_zsh_config() {
     exit 1
   fi
 
-  local brew_path_line=""
+  local brew_init_line=""
   if [ -n "$BREW_BIN" ]; then
-    local brew_prefix
-    brew_prefix=$("$BREW_BIN" --prefix)
     # Esta línea se añade al principio para garantizar que el PATH de Homebrew
     # se configure ANTES de que Oh My Zsh intente cargar plugins como 'docker'.
-    brew_path_line="export PATH=\"${brew_prefix}/bin:${brew_prefix}/sbin:\$PATH\""
+    brew_init_line="eval \"\$($BREW_BIN shellenv)\""
   fi
 
   # Combina la inicialización de Homebrew con el contenido descargado
-  echo -e "${brew_path_line}\n\n${zshrc_content}" > "$HOME/.zshrc"
+  echo -e "${brew_init_line}\n\n${zshrc_content}" > "$HOME/.zshrc"
 
   if command -v pbcopy >/dev/null 2>&1; then
     echo "source ~/.zshrc" | pbcopy
