@@ -214,16 +214,15 @@ configure_terminal_font() {
   font_size=14
 
   echo "Configurando Terminal para usar la fuente $font_name…"
-  /usr/bin/osascript <<OSA >/dev/null 2>&1
-tell application "Terminal"
-  try
-    set font name of default settings to "$font_name"
-    set font size of default settings to "$font_size"
-    set font name of startup settings to "$font_name"
-    set font size of startup settings to "$font_size"
-  end try
-end tell
-OSA
+  osascript >/dev/null 2>&1 \
+    -e "tell application \"Terminal\"" \
+    -e "  try" \
+    -e "    set font name of default settings to \"${font_name}\"" \
+    -e "    set font size of default settings to ${font_size}" \
+    -e "    set font name of startup settings to \"${font_name}\"" \
+    -e "    set font size of startup settings to ${font_size}" \
+    -e "  end try" \
+    -e "end tell"
 }
 
 install_oh_my_zsh() {
