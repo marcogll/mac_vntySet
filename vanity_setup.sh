@@ -138,7 +138,12 @@ install_homebrew() {
 brew_ensure_formula() {
   local formula="$1"
   if brew list --formula "$formula" >/dev/null 2>&1; then
-    echo "✔︎ ${formula} ya está instalado. Omitiendo."
+    if [[ "$formula" == "yt-dlp" ]]; then
+      echo "➜ yt-dlp ya está instalado. Actualizando a la última versión…"
+      brew upgrade yt-dlp
+    else
+      echo "✔︎ ${formula} ya está instalado. Omitiendo."
+    fi
     return
   fi
 
@@ -154,7 +159,16 @@ brew_ensure_cask() {
   fi
 
   echo "➜ Instalando ${cask}…"
-  brew install --cask "$cask"
+  local output
+  if ! output=$(brew install --cask "$cask" 2>&1); then
+    if [[ "$output" == *"already a Font at"* ]]; then
+      echo "✔︎ La fuente de ${cask} ya existe. Omitiendo."
+    else
+      echo "$output" >&2
+      echo "Error al instalar ${cask}." >&2
+      return 1
+    fi
+  fi
 }
 
 install_cli_dependencies() {
@@ -257,11 +271,22 @@ install_zsh_config() {
   mkdir -p "$HOME/.poshthemes"
   curl -fsSL "$POSH_THEME_URL" -o "$POSH_THEME_PATH"
 
-  echo "Descargando .zshrc de Vanity Shell…"
-  if ! curl -fsSL "$ZSHRC_URL" -o "$HOME/.zshrc"; then
+  echo "Descargando y configurando .zshrc de Vanity Shell…"
+  local zshrc_content
+  if ! zshrc_content=$(curl -fsSL "$ZSHRC_URL"); then
     echo "No se pudo descargar la configuración de ZSH." >&2
     exit 1
   fi
+
+  local brew_init_line=""
+  if [ -n "$BREW_BIN" ]; then
+    # Esta línea se añade al principio para garantizar que el PATH de Homebrew
+    # se configure ANTES de que Oh My Zsh intente cargar plugins como 'docker'.
+    brew_init_line="eval \"\$($BREW_BIN shellenv)\""
+  fi
+
+  # Combina la inicialización de Homebrew con el contenido descargado
+  echo -e "${brew_init_line}\n\n${zshrc_content}" > "$HOME/.zshrc"
 
   if command -v pbcopy >/dev/null 2>&1; then
     echo "source ~/.zshrc" | pbcopy
@@ -331,6 +356,14 @@ install_docker_stack() {
     -v /var/run/docker.sock:/var/run/docker.sock \
     -v portainer_data:/data \
     portainer/portainer-ce:latest >/dev/null
+}
+
+update_packages() {
+  echo "Actualizando la lista de paquetes de Homebrew…"
+  install_homebrew
+  echo "Actualizando todos los paquetes de Homebrew instalados…"
+  brew upgrade
+  echo "Todos los paquetes han sido actualizados."
 }
 
 ensure_xcode_clt() {
@@ -415,11 +448,12 @@ main_menu() {
   echo " A) Instalar TODO (recomendado)"
   echo " C) Instalar solo configuración ZSH"
   echo " D) Instalar Docker + Portainer + Lazydocker"
+  echo " P) Actualizar paquetes Homebrew"
   echo " U) Actualizar componentes instalados"
   echo " Q) Salir"
   echo ""
   local choice=""
-  if read_menu_choice "Opción [A/C/D/U/Q]: "; then
+  if read_menu_choice "Opción [A/C/D/P/U/Q]: "; then
     choice="$REPLY"
   else
     echo "No se detecta una entrada interactiva; se seleccionará la opción 'A' por defecto."
@@ -439,6 +473,9 @@ main_menu() {
     D|d)
       install_homebrew
       install_docker_stack
+      ;;
+    P|p)
+      update_packages
       ;;
     U|u)
       echo "Actualizando la instalación existente…"
