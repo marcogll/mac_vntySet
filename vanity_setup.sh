@@ -29,6 +29,40 @@ trap 'echo -e "\nSe produjo un error. Revisa los mensajes anteriores para más d
 
 BREW_BIN=""
 
+retry_command() {
+  local -r max_attempts=3
+  local attempt=1
+  local -a cmd=("$@")
+
+  until "${cmd[@]}"; do
+    if (( attempt >= max_attempts )); then
+      return 1
+    fi
+    sleep "$((attempt * 2))"
+    attempt=$((attempt + 1))
+  done
+  return 0
+}
+
+download_plugin_archive() {
+  local repo="$1"
+  local destination="$2"
+  local archive_url="https://codeload.github.com/${repo}/tar.gz/HEAD"
+
+  if ! command -v curl >/dev/null 2>&1; then
+    return 1
+  fi
+
+  rm -rf "$destination"
+  mkdir -p "$destination"
+
+  if ! curl -fsSL "$archive_url" | tar -xzf - -C "$destination" --strip-components=1 >/dev/null 2>&1; then
+    return 1
+  fi
+
+  return 0
+}
+
 ensure_brew_shellenv() {
   if command -v brew >/dev/null 2>&1; then
     BREW_BIN=$(command -v brew)
@@ -161,9 +195,19 @@ install_oh_my_zsh() {
     local destination="$HOME/.oh-my-zsh/custom/plugins/$(basename "$repo")"
     if [ -d "$destination/.git" ]; then
       git -C "$destination" pull --ff-only >/dev/null 2>&1 || true
-    else
-      git clone "https://github.com/${repo}.git" "$destination"
+      continue
     fi
+
+    if retry_command git clone "https://github.com/${repo}.git" "$destination"; then
+      continue
+    fi
+
+    echo "No se pudo clonar https://github.com/${repo}.git con git, intentando descargar el archivo..." >&2
+    if download_plugin_archive "$repo" "$destination"; then
+      continue
+    fi
+
+    echo "Advertencia: no se pudo instalar ${repo}. Verifica la conexión e inténtalo de nuevo." >&2
   done
 }
 
